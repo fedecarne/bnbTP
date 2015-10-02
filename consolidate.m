@@ -63,7 +63,7 @@ while done == 0
         r = cell2mat(r.results);
         
         %reorder according to file index
-        [~,sorted_idx] = sort([r.index])
+        [~,sorted_idx] = sort([r.index]);
         
         r_consolidated = r(sorted_idx,:);
         done=1;

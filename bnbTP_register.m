@@ -17,6 +17,26 @@ if ~isempty(msg{1,1})
     end
 end
 
+%%% Registratio method
+[choice,ok] = listdlg('PromptString','Select registration method:','SelectionMode','single','ListString',{'ReferenceImage','Recursive'});
+
+if ~ok, disp('Registration cancelled.');return, end;
+   
+switch choice
+    case 1
+        reg_method = 'run_si_register';
+                
+        prompt = {'Reference image file:'};
+        dlg_title = 'Enter image files';
+        num_lines = 1;
+        def = {'reg_med.tif'};
+        answer = inputdlg(prompt,dlg_title,num_lines,def);
+        ref_image = answer{1,1};
+
+    case 2
+        reg_method = 'run_recursive_register';
+end
+
 this_folder = pwd;
 
 if N<50
@@ -25,19 +45,31 @@ else
     shortJob = '';
 end
 
+chan = 1;
+
 % Fill template to run jobs
-fTemplate = fopen('bnb_pbs_template.sh');
-fOutput = fopen('bnb_pbs.sh', 'w+');
+fTemplate = fopen('bnb_register_template.sh');
+fOutput = fopen('bnb_register.sh', 'w+');
 
 tline = fgetl(fTemplate);
 while ischar(tline)
-    tline = strrep( tline, '<<<N>>>', num2str(N));
-    tline = strrep( tline, '<<<datain>>>', datain_folder);
-    tline = strrep( tline, '<<<dataout>>>', dataout_folder);
-    tline = strrep( tline, '<<<memory>>>', memory);
-    tline = strrep( tline, '<<<ref_image>>>', ref_image);
-    tline = strrep( tline, '<<<im_pre>>>', im_pre);
-    tline = strrep( tline, '<<<im_post>>>', im_post);
+    tline = strrep( tline, '<<<reg_method>>>', reg_method);
+    tline = strrep( tline, '<<<N>>>', ['"' num2str(N) '"']);
+    tline = strrep( tline, '<<<datain>>>', ['"' datain_folder '"']);
+    tline = strrep( tline, '<<<dataout>>>', ['"' dataout_folder '/out$SGE_TASK_ID"']);
+    tline = strrep( tline, '<<<memory>>>', ['"' memory '"']);
+    
+    if strcmp(reg_method,'run_si_register')
+        tline = strrep( tline, '<<<ref_image>>>', ['"' datain_folder '/' ref_image '"']);
+    end
+    
+    if strcmp(reg_method,'run_recursive_register')
+        tline = strrep( tline, '<<<ref_image>>>', '');
+    end
+    
+    tline = strrep( tline, '<<<chan>>>', ['"' num2str(chan) '"']);
+    tline = strrep( tline, '<<<im_pre>>>', ['"' im_pre '"']);
+    tline = strrep( tline, '<<<im_post>>>', ['"' im_post '"']);
     fprintf( fOutput, [tline '\n'] );
     tline = fgetl(fTemplate);
 end
@@ -47,16 +79,20 @@ fclose(fOutput);
 disp( 'Uploading registration code to blacknblue...');
 
 % Send .sh to submit
-sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_pbs.sh',[code_folder '/bnb_pbs.sh']);
+sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_register.sh',[code_folder '/bnb_register.sh']);
 
 % Submit job array
 
-[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && mkdir ' dataout_folder ' && qsub ' shortJob ' bnb_pbs.sh']);
+[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && mkdir ' dataout_folder ' && qsub ' shortJob ' bnb_register.sh']);
 disp(msg)
 
-sshfrommatlabissue(channel,['cd ' code_folder '&& rm -f bnb_pbs.sh*']);
+sshfrommatlabissue(channel,['cd ' code_folder '&& rm -f bnb_register.sh*']);
 
 % Close connection to BnB
 sshfrommatlabclose(channel);
     
-reg_r = consolidate(sshdata, code_folder, dataout_folder, results_folder, 'reg_results',1);
+results = consolidate(sshdata, code_folder, dataout_folder, results_folder, 'reg_results',1);
+
+
+
+save([results_folder '/reg_results'],'results');

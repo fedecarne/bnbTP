@@ -1,9 +1,9 @@
-try 
-    sshfrommatlabinstall(1)
-catch ME
-    disp(['Could not find sshfrommatlab package. Make sure it is in your path.'])
-    return
-end
+% try 
+%     sshfrommatlabinstall(1)
+% catch ME
+%     disp(['Could not find sshfrommatlab package. Make sure it is in your path.'])
+%     return
+% end
 
 sshdata.userName = 'fcarneva';
 sshdata.hostName = 'bnbdev1.cshl.edu';
@@ -28,15 +28,14 @@ datain_folder = ['data/' folders{selection,1}];
 dataout_folder = 'data_out'; % folder to put temporary results
 memory = '16'; % required memory for each job (Gb)
 
-prompt = {'Reference image file:','Image prefix:','Image sufix:'};
+prompt = {'Image prefix:','Image sufix:'};
 dlg_title = 'Enter image files';
 num_lines = 1;
-def = {'reg_med.tif','t1_','.tif'};
+def = {'t1_','.tif'};
 answer = inputdlg(prompt,dlg_title,num_lines,def);
 
-ref_image = answer{1,1};
-im_pre = answer{2,1};
-im_post = answer{3,1};
+im_pre = answer{1,1};
+im_post = answer{2,1};
 
 % Get number of images
 [~,msg] = sshfrommatlabissue(channel,['cd ' code_folder ' && cd ' datain_folder ' && ls ' im_pre '*' im_post]);

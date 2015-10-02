@@ -39,7 +39,7 @@ function channel  =  sshfrommatlab(userName,hostName,password)
     try
       channel  =  Connection(hostName);
       channel.connect();
-    catch
+    catch ME
       error(['Error: SSHFROMMATLAB could not connect to the'...
         ' remote machine %s ...'],...
         hostName);
