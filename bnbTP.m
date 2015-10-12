@@ -11,8 +11,8 @@ bnbTP_initialize;
 %% (2) Register images
 bnbTP_register;
 
-%% () Register z stack
-bnbTP_zstack;
+%% (2.5) Register z stack
+%bnbTP_zstack;
 
 zstackView;
 

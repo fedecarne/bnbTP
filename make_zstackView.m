@@ -116,11 +116,15 @@ function frameSlider_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 axes(handles.bigAxes);
-handles.nowFrame=round(handles.frameSlider.Value);
+handles.nowFrame=ceil(handles.frameSlider.Value);
 
 % switch handles.image_popup.Value
 %     case 1
-        handles.baseimage=handles.imageMeanStack(:,:,handles.nowFrame);
+try
+handles.baseimage=handles.imageMeanStack(:,:,handles.nowFrame);
+catch
+    disp('')
+end
 %     case 2
 %         handles.baseimage=handles.imageCorrStack(:,:,handles.nowFrame);
 % end

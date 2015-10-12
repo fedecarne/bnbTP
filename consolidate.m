@@ -59,11 +59,13 @@ while done == 0
         system(['scp fcarneva@bnbdev1.cshl.edu:~/' code_folder '/' fileout '.mat ' results_folder '/' fileout '.mat']);
         
         r = load([results_folder '/' fileout '.mat']);
-
         r = cell2mat(r.results);
+        r = [r.results]';
         
+        aux = cell2mat(r(:,1));
+        index = [aux.index]';
         %reorder according to file index
-        [~,sorted_idx] = sort([r.index]);
+        [~,sorted_idx] = sort(index);
         
         r_consolidated = r(sorted_idx,:);
         done=1;
