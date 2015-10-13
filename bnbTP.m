@@ -12,8 +12,6 @@ bnbTP_initialize;
 bnbTP_register;
 
 %% (2.5) Register z stack
-%bnbTP_zstack;
-
 zstackView;
 
 %% (3) Define ROI's

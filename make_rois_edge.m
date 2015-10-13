@@ -57,9 +57,9 @@ handles.output = hObject;
 
 if numel(varargin{1})>0
     
-    handles.imageMeanStack=varargin{1}.frameMeanMaster;
-    handles.imageVarStack=varargin{1}.frameVarMaster;
-    handles.imageCorrStack=varargin{1}.frameCorrMaster;
+    handles.imageMeanStack=varargin{1}.frameMeanMaster{1,1};
+    handles.imageVarStack=varargin{1}.frameVarMaster{1,1};
+    handles.imageCorrStack=varargin{1}.frameCorrMaster{1,1};
     
     switch handles.image_popup.Value
         case 1
@@ -745,8 +745,6 @@ function image_popup_Callback(hObject, eventdata, handles)
     
     guidata(hObject, handles);
     imscale(hObject, handles);
-% Hints: contents = cellstr(get(hObject,'String')) returns image_popup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from image_popup
 
 
 % --- Executes during object creation, after setting all properties.
@@ -813,13 +811,13 @@ end
 
 
 % --- Executes during object creation, after setting all properties.
-function Channel_CreateFcn(hObject, eventdata, handles)
+function channel_popup_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Channel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
 % --- Executes during object creation, after setting all properties.
-function channel_popup_CreateFcn(hObject, eventdata, handles)
+function Channel_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Channel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called

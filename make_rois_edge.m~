@@ -1,35 +1,35 @@
-function varargout = make_rois_edge2(varargin)
-% make_rois_edge2 MATLAB code for make_rois_edge2.fig
-%      make_rois_edge2, by itself, creates a new make_rois_edge2 or raises the existing
+function varargout = make_rois_edge(varargin)
+% make_rois_edge MATLAB code for make_rois_edge.fig
+%      make_rois_edge, by itself, creates a new make_rois_edge or raises the existing
 %      singleton*.
 %
-%      H = make_rois_edge2 returns the handle to a new make_rois_edge2 or the handle to
+%      H = make_rois_edge returns the handle to a new make_rois_edge or the handle to
 %      the existing singleton*.
 %
-%      make_rois_edge2('CALLBACK',hObject,eventdata,handles,...) calls the local
-%      function named CALLBACK in make_rois_edge2.M with the given input arguments.
+%      make_rois_edge('CALLBACK',hObject,eventdata,handles,...) calls the local
+%      function named CALLBACK in make_rois_edge.M with the given input arguments.
 %
-%      make_rois_edge2('Property','Value',...) creates a new make_rois_edge2 or raises the
+%      make_rois_edge('Property','Value',...) creates a new make_rois_edge or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before make_rois_edge2_OpeningFcn gets called.  An
+%      applied to the GUI before make_rois_edge_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to make_rois_edge2_OpeningFcn via varargin.
+%      stop.  All inputs are passed to make_rois_edge_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help make_rois_edge2
+% Edit the above text to modify the response to help make_rois_edge
 
-% Last Modified by GUIDE v2.5 12-Oct-2015 15:48:35
+% Last Modified by GUIDE v2.5 12-Oct-2015 15:59:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @make_rois_edge2_OpeningFcn, ...
-                   'gui_OutputFcn',  @make_rois_edge2_OutputFcn, ...
+                   'gui_OpeningFcn', @make_rois_edge_OpeningFcn, ...
+                   'gui_OutputFcn',  @make_rois_edge_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,22 +44,22 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before make_rois_edge2 is made visible.
-function make_rois_edge2_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before make_rois_edge is made visible.
+function make_rois_edge_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to make_rois_edge2 (see VARARGIN)
+% varargin   command line arguments to make_rois_edge (see VARARGIN)
 
-% Choose default command line output for make_rois_edge2
+% Choose default command line output for make_rois_edge
 handles.output = hObject;
 
 if numel(varargin{1})>0
     
-    handles.imageMeanStack=varargin{1}.frameMeanMaster;
-    handles.imageVarStack=varargin{1}.frameVarMaster;
-    handles.imageCorrStack=varargin{1}.frameCorrMaster;
+    handles.imageMeanStack=varargin{1}.frameMeanMaster{1,1};
+    handles.imageVarStack=varargin{1}.frameVarMaster{1,1};
+    handles.imageCorrStack=varargin{1}.frameCorrMaster{1,1};
     
     switch handles.image_popup.Value
         case 1
@@ -191,12 +191,12 @@ function setcallbacks(src,evnt)
             end
     end;
 
-% UIWAIT makes make_rois_edge2 wait for user response (see UIRESUME)
+% UIWAIT makes make_rois_edge wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = make_rois_edge2_OutputFcn(hObject, eventdata, handles) 
+function varargout = make_rois_edge_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -745,8 +745,6 @@ function image_popup_Callback(hObject, eventdata, handles)
     
     guidata(hObject, handles);
     imscale(hObject, handles);
-% Hints: contents = cellstr(get(hObject,'String')) returns image_popup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from image_popup
 
 
 % --- Executes during object creation, after setting all properties.
@@ -823,3 +821,7 @@ function channel_popup_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Channel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+    handles.imageMeanStack=varargin{1}.frameMeanMaster{1,1};
+    handles.imageVarStack=varargin{1}.frameVarMaster{1,1};
+    handles.imageCorrStack=varargin{1}.frameCorrMaster{1,1};

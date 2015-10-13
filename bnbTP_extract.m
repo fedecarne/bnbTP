@@ -34,13 +34,12 @@ disp([num2str(N) ' images in data folder...']);
 
 [FileName,PathName] = uigetfile('*.mat','Select ROIs file',[results_folder '/rois.mat']);
 
-
 % send rois
 disp('Uploading rois...')
 sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,[PathName FileName], [code_folder '/rois.mat'])
 
-[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && ./run_check_rois.sh /opt/hpc/pkg/MATLAB/R2013a "rois.mat"']);
-[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && cat check_rois_result']);
+[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && ./run_check_mat.sh /opt/hpc/pkg/MATLAB/R2013a "rois.mat"']);
+[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && cat check_mat_result']);
 
 trying=0;
 while strcmp(msg,'1')
@@ -68,6 +67,15 @@ switch choice
         disp('Uploading reg_results...')
         % send reg_results
         sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,[PathName FileName], [code_folder '/reg_results.mat'])
+        
+        [~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && ./run_check_mat.sh /opt/hpc/pkg/MATLAB/R2013a "reg_results.mat"']);
+        [~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && cat check_mat_result']);
+        
+        if strcmp(msg,'1')
+            disp('Uploading failes. Try manually:')
+            system(['scp ' PathName FileName ' fcarneva@bnbdev2.cshl.edu:~/bnbTP'])
+        end
+        
     case 'Use the one in BnB'
         disp('Will use the reg_result currently in BnB.')
 end
@@ -77,10 +85,6 @@ end
 %else
     shortJob = '';
 %end
-
-% Fill template for extraction
-%fTemplate = fopen('bnb_extractROI2_template.sh');
-%fOutput = fopen('bnb_extractROI2.sh', 'w+');
 
 fTemplate = fopen('bnb_extractROI_template.sh');
 fOutput = fopen('bnb_extractROI.sh', 'w+');
@@ -106,7 +110,6 @@ sshfrommatlabissue(channel,['cd ' code_folder '&& rm -f bnb_extractROI.sh']);
 
 % Send .sh to submit
 sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_extractROI.sh',[code_folder '/bnb_extractROI.sh']);
-%sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_extractROI2.sh',[code_folder '/bnb_extractROI2.sh']);
 
 [~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && if test -d roi; then echo "1"; fi']);
 
@@ -125,7 +128,6 @@ if  ~isempty(msg{1,1})
 end
 
 % Submit job array
-%[~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && mkdir roi && qsub ' shortJob 'bnb_extractROI2.sh']);
 [~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && mkdir roi && qsub ' shortJob 'bnb_extractROI.sh']);
 disp(msg)
 

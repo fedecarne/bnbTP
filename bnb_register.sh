@@ -12,5 +12,5 @@
 # run commands and application
 pwd
 date
-./run_recursive_register.sh /opt/hpc/pkg/MATLAB/R2013a "data/151011_fm048" "t1_" ".tif" "1"  "data_out/out$SGE_TASK_ID" $SGE_TASK_ID
+./run_si_register.sh /opt/hpc/pkg/MATLAB/R2013a "data/151011_fm048" "t1_" ".tif" "1" "data/151011_fm048/reg_med.tif" "data_out/out$SGE_TASK_ID" $SGE_TASK_ID
 date
