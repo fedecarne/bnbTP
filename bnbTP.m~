@@ -11,6 +11,11 @@ bnbTP_initialize;
 %% (2) Register images
 bnbTP_register;
 
+%% (2.5) Register z stack
+%bnbTP_zstack;
+
+zstackView;
+
 %% (3) Define ROI's
 bnbTP_rois;
 
@@ -18,13 +23,14 @@ bnbTP_rois;
 roisPlot();
 
 %% (4) Extract fluorescence
-bnbTP_extract2;
+bnbTP_extract;
 
 %% (5) Clean temporary files in BnB
 bnbTP_clean;
 
 %% Concatenate all times
-F  = [traces(:).roisTrace];
+channel = 1;
+F  = [traces(:,channel).roisTrace];
 t  = [traces(:).frameTimeStamps];
 plot(t,F')
 

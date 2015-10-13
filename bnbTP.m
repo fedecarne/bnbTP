@@ -23,14 +23,16 @@ bnbTP_rois;
 roisPlot();
 
 %% (4) Extract fluorescence
-bnbTP_extract2;
+bnbTP_extract;
 
 %% (5) Clean temporary files in BnB
 bnbTP_clean;
 
 %% Concatenate all times
-F  = [traces(:).roisTrace];
-t  = [traces(:).frameTimeStamps];
+channel = 1;
+traces_chan = cell2mat(traces(:,channel));
+F  = [traces_chan.roisTrace];
+t  = [traces_chan(:).frameTimeStamps];
 plot(t,F')
 
 imagesc(F(:,1:20000))

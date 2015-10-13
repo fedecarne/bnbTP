@@ -1,15 +1,15 @@
 function varargout = make_rois_edge2(varargin)
-% MAKE_ROIS_EDGE2 MATLAB code for make_rois_edge2.fig
-%      MAKE_ROIS_EDGE2, by itself, creates a new MAKE_ROIS_EDGE2 or raises the existing
+% make_rois_edge2 MATLAB code for make_rois_edge2.fig
+%      make_rois_edge2, by itself, creates a new make_rois_edge2 or raises the existing
 %      singleton*.
 %
-%      H = MAKE_ROIS_EDGE2 returns the handle to a new MAKE_ROIS_EDGE2 or the handle to
+%      H = make_rois_edge2 returns the handle to a new make_rois_edge2 or the handle to
 %      the existing singleton*.
 %
-%      MAKE_ROIS_EDGE2('CALLBACK',hObject,eventdata,handles,...) calls the local
-%      function named CALLBACK in MAKE_ROIS_EDGE2.M with the given input arguments.
+%      make_rois_edge2('CALLBACK',hObject,eventdata,handles,...) calls the local
+%      function named CALLBACK in make_rois_edge2.M with the given input arguments.
 %
-%      MAKE_ROIS_EDGE2('Property','Value',...) creates a new MAKE_ROIS_EDGE2 or raises the
+%      make_rois_edge2('Property','Value',...) creates a new make_rois_edge2 or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before make_rois_edge2_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -22,7 +22,7 @@ function varargout = make_rois_edge2(varargin)
 
 % Edit the above text to modify the response to help make_rois_edge2
 
-% Last Modified by GUIDE v2.5 09-Oct-2015 15:02:01
+% Last Modified by GUIDE v2.5 12-Oct-2015 15:48:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;

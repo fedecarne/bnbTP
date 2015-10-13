@@ -12,5 +12,5 @@
 # run commands and application
 pwd
 date
-./run_bnb_extractROI.sh /opt/hpc/pkg/MATLAB/R2013a "<<<datain>>>" "<<<im_pre>>>" "<<<im_post>>>" "rois.mat" "<<<dataout>>>/out$SGE_TASK_ID" "roi/r$SGE_TASK_ID.mat" $SGE_TASK_ID
+./run_bnb_extractROI.sh /opt/hpc/pkg/MATLAB/R2013a "<<<datain>>>" "<<<im_pre>>>" "<<<im_post>>>" "rois.mat" "reg_results.mat" "roi/r$SGE_TASK_ID.mat" $SGE_TASK_ID
 date

@@ -1,7 +1,7 @@
 #!/bin/bash
 # specify BASH shell
 #$ -S /bin/bash
-#$ -t 1-3
+#$ -t 1-63
 # pass environment variables to job, e.g. LD_LIBRARY_PATH
 #$ -v LD_LIBRARY_PATH
 # run job in the current working directory where qsub is executed from
@@ -12,5 +12,5 @@
 # run commands and application
 pwd
 date
-./run_bnb_extractROI2.sh /opt/hpc/pkg/MATLAB/R2013a "data/lad" "t1_" ".tif" "rois.mat" "reg_results.mat" "roi/r$SGE_TASK_ID.mat" $SGE_TASK_ID
+./run_bnb_extractROI.sh /opt/hpc/pkg/MATLAB/R2013a "data/151011_fm048" "t1_" ".tif" "rois.mat" "reg_results.mat" "roi/r$SGE_TASK_ID.mat" $SGE_TASK_ID
 date

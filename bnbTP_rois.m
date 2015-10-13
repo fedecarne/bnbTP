@@ -14,4 +14,4 @@ frameMaster.frameMeanMaster = reshape([reg_r.frameMean],size(reg_r(1,1).frameMea
 frameMaster.frameVarMaster = var(frameMaster.frameMeanMaster,1,3);
 frameMaster.frameCorrMaster = reshape([reg_r.ccimage],size(reg_r(1,1).ccimage,1),size(reg_r(1,1).ccimage,2),size(reg_r,1));
 
-make_rois_edge2(frameMaster);
+make_rois_edge(frameMaster);

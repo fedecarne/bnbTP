@@ -70,7 +70,8 @@ channel  =  sshfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password);
 sshfrommatlabissue(channel,['cd ' code_folder '&& rm -f bnb_extractROI2.sh']);
 
 % Send .sh to submit
-sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_extractROI2.sh',[code_folder '/bnb_extractROI2.sh']);
+sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_extractROI.sh',[code_folder '/bnb_extractROI.sh']);
+%sftpfrommatlab(sshdata.userName,sshdata.hostName,sshdata.password,'bnb_extractROI2.sh',[code_folder '/bnb_extractROI2.sh']);
 
 [~, msg]  =  sshfrommatlabissue(channel,['cd ' code_folder ' && if test -d roi; then echo "1"; fi']);
 

@@ -11,5 +11,5 @@
 # run commands and application
 pwd
 date
-./run_bnb_consolidate.sh /opt/hpc/pkg/MATLAB/R2013a "data_out" "reg_results"
+./run_bnb_consolidate.sh /opt/hpc/pkg/MATLAB/R2013a "roi" "traces"
 date

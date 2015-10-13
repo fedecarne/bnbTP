@@ -1,15 +1,15 @@
 function varargout = make_rois_edge(varargin)
-% MAKE_ROIS_EDGE MATLAB code for make_rois_edge.fig
-%      MAKE_ROIS_EDGE, by itself, creates a new MAKE_ROIS_EDGE or raises the existing
+% make_rois_edge MATLAB code for make_rois_edge.fig
+%      make_rois_edge, by itself, creates a new make_rois_edge or raises the existing
 %      singleton*.
 %
-%      H = MAKE_ROIS_EDGE returns the handle to a new MAKE_ROIS_EDGE or the handle to
+%      H = make_rois_edge returns the handle to a new make_rois_edge or the handle to
 %      the existing singleton*.
 %
-%      MAKE_ROIS_EDGE('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MAKE_ROIS_EDGE.M with the given input arguments.
+%      make_rois_edge('CALLBACK',hObject,eventdata,handles,...) calls the local
+%      function named CALLBACK in make_rois_edge.M with the given input arguments.
 %
-%      MAKE_ROIS_EDGE('Property','Value',...) creates a new MAKE_ROIS_EDGE or raises the
+%      make_rois_edge('Property','Value',...) creates a new make_rois_edge or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before make_rois_edge_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -22,7 +22,7 @@ function varargout = make_rois_edge(varargin)
 
 % Edit the above text to modify the response to help make_rois_edge
 
-% Last Modified by GUIDE v2.5 02-Aug-2015 09:39:08
+% Last Modified by GUIDE v2.5 12-Oct-2015 15:59:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 0;
@@ -56,26 +56,59 @@ function make_rois_edge_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 if numel(varargin{1})>0
-    handles.imageStack=varargin{1};
-    handles.baseimage=handles.imageStack(:,:,1);
-    handles.frameSlider.Max=size(handles.imageStack,3);
-    handles.frameSlider.SliderStep=[1/handles.frameSlider.Max 1/handles.frameSlider.Max];
+    
+    handles.imageMeanStack=varargin{1}.frameMeanMaster;
+    handles.imageVarStack=varargin{1}.frameVarMaster;
+    handles.imageCorrStack=varargin{1}.frameCorrMaster;
+    
+    switch handles.image_popup.Value
+        case 1
+            handles.baseimage = handles.imageMeanStack(:,:,1);
+        case 2
+            handles.baseimage = handles.imageVarStack;
+        case 3
+            handles.baseimage = handles.imageCorrStack(:,:,1);
+    end
+
+    handles.corrimage = handles.imageCorrStack(:,:,1);
+    
+    handles.frameSlider.Max=size(handles.imageMeanStack,3);
+    handles.frameSlider.SliderStep=[1/(handles.frameSlider.Max-1) 1/(handles.frameSlider.Max-1)];
     handles.frameSliderIndicator.String=1;
     handles.nowFrame=1;
     axes(handles.bigAxes);
-    handles.baseimageRGB=handles.baseimage-min(handles.baseimage(:));
-    handles.baseimageRGB=handles.baseimageRGB./max(handles.baseimageRGB(:));
-    handles.baseimageRGB=repmat(handles.baseimageRGB,[1,1,3]);
+    
+    %initialize brightness and contrast
+    handles.contrast_slider.Value = 1./(max(max(handles.baseimage))-min(min(handles.baseimage)));
+    handles.bright_slider.Value = 1/2*(1-(max(max(handles.baseimage))+min(min(handles.baseimage)))/(max(max(handles.baseimage))-min(min(handles.baseimage))));
+    
+    handles.contrast_slider.Max = 10*handles.contrast_slider.Value;
+    handles.contrast_slider.Min = 1/10*handles.contrast_slider.Value;
+    
+    handles.bright_slider.Min = -1;
+    handles.bright_slider.Max = 1;
+    
+    handles.bright_txt.String = handles.bright_slider.Value;
+    handles.contrast_txt.String = handles.contrast_slider.Value;
+    
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
 
     %%% at the back -- just to keep track
     handles.rois=imagesc(zeros(size(handles.baseimage,1),size(handles.baseimage,2),1));hold on;
-    %%% second layer -- reference image
+    
+    %%% second layer -- reference image    
+%     [X,map] = rgb2ind(handles.baseimageRGB,64);
+%     handles.ref_image=image(X);
+%     colormap('parula')
+
     handles.ref_image=image(handles.baseimageRGB);
+
+    
     %%% top layer -- for presantatation popurses
     handles.roi_image=image(zeros(size(handles.baseimage,1),size(handles.baseimage,2),3));axis off
     handles.roi_image.AlphaData=handles.roi_image.CData(:,:,1)==1;
-
-
+    
     handles.test_val=0;
     handles.LastCoorCalled=[0 0];
     winSize=cell2mat(textscan(handles.smallWinSize.String,'%f'));
@@ -117,7 +150,7 @@ set(handles.roi_image,'ButtonDownFcn',{@ImageClickCallback,handles});
 
 function figScroll(src,evnt,handles)
     if evnt.VerticalScrollCount==1
-        if handles.frameSlider.Value<size(handles.imageStack,3)
+        if handles.frameSlider.Value<size(handles.imageMeanStack,3)
             handles.frameSlider.Value=handles.frameSlider.Value+1;
         end
     else
@@ -301,14 +334,21 @@ function frameSlider_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
     axes(handles.bigAxes);
     handles.nowFrame=round(handles.frameSlider.Value);
-    handles.baseimage=handles.imageStack(:,:,handles.nowFrame);
-    handles.frameSlider.Max=size(handles.imageStack,3);
+    
+    switch handles.image_popup.Value
+        case 1
+            handles.baseimage=handles.imageMeanStack(:,:,handles.nowFrame);
+        case 2
+            handles.baseimage=handles.imageVarStack;
+        case 3
+            handles.baseimage=handles.imageCorrStack(:,:,handles.nowFrame);
+    end
+    
+    handles.frameSlider.Max=size(handles.imageMeanStack,3);
     handles.frameSliderIndicator.String=handles.nowFrame;
 
-
-    handles.baseimageRGB=handles.baseimage-min(handles.baseimage(:));
-    handles.baseimageRGB=handles.baseimageRGB./max(handles.baseimageRGB(:));
-    handles.baseimageRGB=repmat(handles.baseimageRGB,[1,1,3]);
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
 
     handles.ref_image.CData=handles.baseimageRGB;
     set(handles.ref_image,'ButtonDownFcn',{@ImageClickCallback,handles});
@@ -343,7 +383,7 @@ function smallWinSize_Callback(hObject, eventdata, handles)
 
 % --- Executes during object creation, after setting all properties.
 function smallWinSize_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to smallWinSize (see GCBO)
+% hObject    handle to smallWinSize (see GCBO)  
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -448,14 +488,22 @@ function fillCell_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of fillCell
 
 
-function ImageClickCallback( hObject , eventData ,handles)
+function ImageClickCallback( hObject , eventdata ,handles)
     coordinates = get(handles.bigAxes,'CurrentPoint'); %stores last coordinates within the large image
     handles.coor=round([coordinates(1,2),coordinates(1,1)]);
-    mathod_smallWinCenter( hObject , eventData ,handles);
+    mathod_smallWinCenter( hObject , eventdata ,handles);
+    % update h and y sliders
+    handles.h_slider.Value = handles.coor(2);
+    handles.h_slider.Min = handles.h_slider.Value-20;
+    handles.h_slider.Max = handles.h_slider.Value+20;
+    handles.y_slider.Value = handles.coor(1);
+    handles.y_slider.Min = handles.y_slider.Value-20;
+    handles.y_slider.Max = handles.y_slider.Value+20;
     guidata(hObject, handles);
 
 
-function mathod_smallWinCenter( hObject , eventData ,handles)
+function mathod_smallWinCenter( hObject , eventdata ,handles)
+    
 if isfield(handles, 'coor')
     
     winSize=cell2mat(textscan(handles.smallWinSize.String,'%f'));
@@ -471,7 +519,6 @@ if isfield(handles, 'coor')
     handles.top_image.CData=smallFrame;
     handles.topAxes.XLim=[1 length(winInd{2})];
     handles.topAxes.YLim=[1 length(winInd{1})];
-
 
     trsh=handles.trsh.Value;
     option2applay=1;%% increaswe for all option selected
@@ -528,13 +575,251 @@ function trsh_ButtonDownFcn(hObject, eventdata, handles)
 
 
 % % --- Executes on mouse press over axes background.
-% function LowImageClickCallback(hObject, eventdata, handles)
+ function LowImageClickCallback(hObject, eventdata, handles)
 % % hObject    handle to lowAxes (see GCBO)
 % % eventdata  reserved - to be defined in a future version of MATLAB
 % % handles    structure with handles and user data (see GUIDATA)
-% handles = guidata(hObject);
-% coordinates = get(handles.lowAxes,'CurrentPoint'); %stores last coordinates within the large image
-% coordinates = round([coordinates(1,1),coordinates(1,2)]);
-% handles.mask(coordinates(2), coordinates(1)) = ~handles.mask(coordinates(2),coordinates(1)); % toggle pixel
-% handles.low_image.CData(:,:,1) = handles.mask;
-% guidata(hObject,handles);
+handles = guidata(hObject);
+coordinates = get(handles.lowAxes,'CurrentPoint'); %stores last coordinates within the large image
+coordinates = round([coordinates(1,1),coordinates(1,2)]);
+handles.low_image.CData(coordinates(2),coordinates(1),1) = ~handles.low_image.CData(coordinates(2),coordinates(1),1);
+guidata(hObject,handles);
+
+
+function bright_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to bright_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of bright_txt as text
+%        str2double(get(hObject,'String')) returns contents of bright_txt as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function bright_txt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to bright_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function bright_slider_Callback(hObject, eventdata, handles)
+% hObject    handle to bright_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    axes(handles.bigAxes);
+    handles.bright_txt.String = handles.bright_slider.Value;
+
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
+    handles.ref_image.CData=handles.baseimageRGB;
+    
+    guidata(hObject, handles);
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function bright_slider_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to bright_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function contrast_slider_Callback(hObject, eventdata, handles)
+% hObject    handle to contrast_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    axes(handles.bigAxes);
+    handles.contrast_txt.String = handles.contrast_slider.Value;
+
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
+    handles.ref_image.CData=handles.baseimageRGB;
+    
+    guidata(hObject, handles);
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function contrast_slider_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to contrast_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function contrast_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to contrast_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of contrast_txt as text
+%        str2double(get(hObject,'String')) returns contents of contrast_txt as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function contrast_txt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to contrast_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% Scales brightness and contrast of current image
+function imscale(hObject,handles)
+    axes(handles.bigAxes);
+    
+    handles.contrast_slider.Value = 1./(max(max(handles.baseimage))-min(min(handles.baseimage)));
+    handles.bright_slider.Value = 1/2*(1-(max(max(handles.baseimage))+min(min(handles.baseimage)))/(max(max(handles.baseimage))-min(min(handles.baseimage))));
+    
+    handles.contrast_slider.Max = 10*handles.contrast_slider.Value;
+    handles.contrast_slider.Min = 1/10*handles.contrast_slider.Value;
+    
+    handles.bright_slider.Min = -1;
+    handles.bright_slider.Max = 1;
+    
+    handles.bright_txt.String = handles.bright_slider.Value;
+    handles.contrast_txt.String = handles.contrast_slider.Value;
+
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
+    handles.ref_image.CData = handles.baseimageRGB;
+    
+    guidata(hObject, handles);
+
+
+% --- Executes on button press in imscale_btn.
+function imscale_btn_Callback(hObject, eventdata, handles)
+% hObject    handle to imscale_btn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    imscale(hObject,handles);
+    
+
+
+% --- Executes on selection change in image_popup.
+function image_popup_Callback(hObject, eventdata, handles)
+% hObject    handle to image_popup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    axes(handles.bigAxes);
+
+    switch handles.image_popup.Value
+        case 1
+            handles.baseimage=handles.imageMeanStack(:,:,handles.nowFrame);
+        case 2
+            handles.baseimage=handles.imageVarStack;
+        case 3
+            handles.baseimage=handles.imageCorrStack(:,:,handles.nowFrame);
+    end
+
+    handles.baseimageRGB = handles.baseimage*handles.contrast_slider.Value+handles.bright_slider.Value;
+    handles.baseimageRGB = repmat(handles.baseimageRGB,[1,1,3]);
+
+    handles.ref_image.CData=handles.baseimageRGB;
+    set(handles.ref_image,'ButtonDownFcn',{@ImageClickCallback,handles});
+    
+    guidata(hObject, handles);
+    imscale(hObject, handles);
+% Hints: contents = cellstr(get(hObject,'String')) returns image_popup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from image_popup
+
+
+% --- Executes during object creation, after setting all properties.
+function image_popup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to image_popup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function h_slider_Callback(hObject, eventdata, handles)
+% hObject    handle to h_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+d = get(hObject,'Value');
+handles.coor(2) = round(d);
+mathod_smallWinCenter( hObject , eventdata ,handles);
+guidata(hObject, handles);
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function h_slider_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to h_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function y_slider_Callback(hObject, eventdata, handles)
+% hObject    handle to y_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+d = get(hObject,'Value');
+handles.coor(1) = (handles.y_slider.Min + handles.y_slider.Max) - d;
+mathod_smallWinCenter( hObject , eventdata ,handles);
+guidata(hObject, handles);
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+% --- Executes during object creation, after setting all properties.
+function y_slider_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to y_slider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function Channel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Channel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% --- Executes during object creation, after setting all properties.
+function channel_popup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Channel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
